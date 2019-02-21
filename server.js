@@ -1,53 +1,59 @@
-require('dotenv').config()
-const express = require('express')
-const morgan = require('morgan')
-const app = express()
-const POKEDEX = require('./pokedex.json')
+'use strict';
 
-app.use(morgan('dev'))
+require('dotenv').config();
+const express = require('express');
+const morgan = require('morgan');
+const app = express();
+const cors = require('cors');
+const helmet = require('helmet');
+const POKEDEX = require('./pokedex.json');
+
+app.use(morgan('dev'));
+app.use(helmet());
+app.use(cors());
 
 app.use(function validateBearerToken(req, res, next) {
-  const authToken = req.get('Authorization')
-  const apiToken = process.env.API_TOKEN
-  console.log('validate bearer token middleware')
+  const authToken = req.get('Authorization');
+  const apiToken = process.env.API_TOKEN;
+  console.log('validate bearer token middleware');
   // move to the next middleware
   if (!authToken || authToken.split(' ')[1] !== apiToken) {
-    return res.status(401).json({ error: 'Unauthorized request' })
+    return res.status(401).json({ error: 'Unauthorized request' });
   }
-  next()
-})
+  next();
+});
 
 
-console.log(process.env.API_TOKEN)
+console.log(process.env.API_TOKEN);
 
-const validTypes = [`Bug`, `Dark`, `Dragon`, `Electric`, `Fairy`, `Fighting`, `Fire`, `Flying`, `Ghost`, `Grass`, `Ground`, `Ice`, `Normal`, `Poison`, `Psychic`, `Rock`, `Steel`, `Water`]
+const validTypes = ['Bug', 'Dark', 'Dragon', 'Electric', 'Fairy', 'Fighting', 'Fire', 'Flying', 'Ghost', 'Grass', 'Ground', 'Ice', 'Normal', 'Poison', 'Psychic', 'Rock', 'Steel', 'Water'];
 
 function handleGetTypes(req, res) {
-  res.json(validTypes)
+  res.json(validTypes);
 }
 
-app.get('/types', handleGetTypes)
+app.get('/types', handleGetTypes);
 
 function handleGetPokemon(req, res) {
-  const  name = req.query.name
-  const  type = req.query.type
-  let results = POKEDEX.pokemon
+  const  name = req.query.name;
+  const  type = req.query.type;
+  let results = POKEDEX.pokemon;
   
   if (req.query.name) {
-  results = results.filter((item) => item.name.toLowerCase() === name.toLowerCase()) 
-}
+    results = results.filter((item) => item.name.toLowerCase() === name.toLowerCase()); 
+  }
   if (req.query.type) {
-  results = results.filter((item) => item.type.includes(type))
+    results = results.filter((item) => item.type.includes(type));
+  }
+  res.send(results);
 }
-  res.send(results)
-}
 
-app.get('/pokemon', handleGetPokemon)
+app.get('/pokemon', handleGetPokemon);
 
 
 
-const PORT = 8000
+const PORT = 8000;
 
 app.listen(PORT, () => {
-  console.log(`Server listening at http://localhost:${PORT}`)
-})
+  console.log(`Server listening at http://localhost:${PORT}`);
+});
